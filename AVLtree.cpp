@@ -64,14 +64,14 @@ int getBalance(node *N) {
     return height(N->left) - height(N->right);
 }
 
-int cmp(point a,point b){
-    if (a.x==b.x and a.y==b.y)
-        return 0;
-    else if (a.x<b.x || (a.x==b.x)&&(a.y<b.y))
-        return -1;
-    else
-        return 1;
+int cmp(point p,point q){
+    if (p.x>q.x) return 1;
+    if (p.x<q.x) return -1;
+    if (p.y>q.y) return 1;
+    if (p.y<q.y) return -1;
+    return 0;
 }
+
 node* insert(node* n, point q){
     if (n == NULL)
         return(newNode(q));
@@ -108,72 +108,93 @@ node* insert(node* n, point q){
     return n;
 }
 
-node * minValueNode(node* node){ ///find leftmost leaf, for rearranging after delete
+struct node * minValueNode(struct node* node) {
     struct node* current = node;
+    /* loop down to find the leftmost leaf */
     while (current->left != NULL)
         current = current->left;
     return current;
 }
-
-///Recursively delete a node, and then balance the tree
-node* deleteNode(node* root, point key)
-{
-    if (root == NULL)                     ///Key not found
+struct
+ node* deleteNode(struct node* root, point key){
+    /// STEP 1: PERFORM STANDARD BST DELETE
+    if (root == NULL)
         return root;
-
-    if (cmp(key,root->p)==-1)             ///Key present to the left
+    /// If the key to be deleted is smaller than the
+    /// root's key, then it lies in left subtree
+    if ( cmp(key,root->p)==-1 )
         root->left = deleteNode(root->left, key);
 
-    else if(cmp(key,root->p)==1)          ///Key present to the right
+    /// If the key to be deleted is greater than the
+    /// root's key, then it lies in right subtree
+    else if( cmp(key,root->p)==1 )
         root->right = deleteNode(root->right, key);
 
-    else{                                 ///Key found, and to be deleted
-        if( (root->left == NULL) || (root->right == NULL) )         ///One or no child
-        {
-            node *temp = (root->left!=NULL)? root->left : root->right;
-
-            if (temp == NULL){            /// No child case
+    /// if key is same as root's key, then this is the node to be deleted
+    else{
+        /// node with only one child or no child
+        if( (root->left == NULL) || (root->right == NULL) ){
+            struct node *temp = root->left ? root->left : root->right;
+            /// No child case
+            if (temp == NULL){
                 temp = root;
                 root = NULL;
             }
-            else                          /// One child case
-             *root = *temp;
+            else /// One child case
+             *root = *temp; /// Copy the contents of the non-empty child
             free(temp);
         }
-        else{                             ///Node with two children
-            node* temp = minValueNode(root->right);
+        else{
+            /// node with two children: Get the inorder
+            /// successor (smallest in the right subtree)
+            struct node* temp = minValueNode(root->right);
+
+            /// Copy the inorder successor's data to this node
             root->p = temp->p;
+
+            /// Delete the inorder successor
             root->right = deleteNode(root->right, temp->p);
         }
     }
 
+    /// If the tree had only one node then return
     if (root == NULL)
       return root;
 
-    ///Update height
-    root->height = 1 + max(height(root->left), height(root->right));
+    /// STEP 2: UPDATE HEIGHT OF THE CURRENT NODE
+    root->height = 1 + max(height(root->left),height(root->right));
 
-    ///Balance
+    /// STEP 3: GET THE BALANCE FACTOR OF THIS NODE (to
+    /// check whether this node became unbalanced)
     int balance = getBalance(root);
 
+    /// If this node becomes unbalanced, then there are 4 cases
+
+    /// Left Left Case
     if (balance > 1 && getBalance(root->left) >= 0)
         return rightRotate(root);
 
-    if (balance > 1 && getBalance(root->left) < 0){
+    /// Left Right Case
+    if (balance > 1 && getBalance(root->left) < 0)
+    {
         root->left =  leftRotate(root->left);
         return rightRotate(root);
     }
 
+    /// Right Right Case
     if (balance < -1 && getBalance(root->right) <= 0)
         return leftRotate(root);
 
-    if (balance < -1 && getBalance(root->right) > 0){
+    // Right Left Case
+    if (balance < -1 && getBalance(root->right) > 0)
+    {
         root->right = rightRotate(root->right);
         return leftRotate(root);
     }
 
     return root;
 }
+
 
 
 void preOrder(node *root){
@@ -191,7 +212,14 @@ void postOrder(node *root){
         postOrder(root->right);
         cout<<root->p.x<<" "<<root->p.y<<endl;
     }
+}
 
+void inOrder(node *root){
+    if (root!=NULL){
+        inOrder(root->left);
+        cout<<root->p.x<<" "<<root->p.y<<endl;
+        inOrder(root->right);
+    }
 }
 
 
@@ -213,16 +241,26 @@ int main()
 
   cout<<"Postorder traversal:"<<endl;
   postOrder(root);
+
+  cout<<"Inorder traversal:"<<endl;
+  inOrder(root);
+
+  point q;
+  cin>>q.x>>q.y;
+  root=deleteNode(root,q);
+  cout<<"After deleting: "<<endl;
+  postOrder(root);
+
 }
 
 /**
 8
-5 2
-8 3
-11 4
-1 4
-3 6
-12 7
-10 7
+5 5
+2 3
+1 1
+4 7
 2 9
+5 4
+7 1
+8 9
 **/
