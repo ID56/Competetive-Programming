@@ -3,6 +3,7 @@
 using namespace std;
 
 typedef vector<int> BigInt;
+typedef long long ll;
 
 void Set(BigInt &a) {
     while (a.size() > 1 && a.back() == 0)
@@ -58,6 +59,24 @@ BigInt operator + (BigInt a, BigInt b) {
     return ans;
 }
 
+BigInt operator * (BigInt a, BigInt b) {
+    Set(a);
+    Set(b);
+    BigInt ans;
+    ans.assign(a.size()+b.size(), 0); ///setting up space for multiplication
+
+    for(int i=0;i<a.size();i++){
+        ll carry = 0ll;
+        for (int j=0;j<b.size() || carry > 0;j++){
+            ll s = ans[i+j] + carry + (ll)a[i]*(j<b.size()?(ll)b[j]:0ll);
+            ans[i+j] = s%base;
+            carry = s/base;
+        }
+    }
+    Set(ans);
+    return ans;
+}
+
 int main(){
     string a,b;
     cin>>a>>b;
@@ -65,5 +84,7 @@ int main(){
     BigInt q=BigInteger(b);
 
     Print(p+q);
+    cout<<endl;
+    Print(p*q);
 }
 
