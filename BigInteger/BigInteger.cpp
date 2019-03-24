@@ -1,4 +1,5 @@
 #include <bits/stdc++.h>
+
 using namespace std;
 
 typedef vector<int> BigInt;
@@ -23,11 +24,9 @@ BigInt BigInteger(string s) {
         ans.push_back(0);
         return ans;
     }
-
     while (s.size()%9 != 0){     ///size of string is now a multiple of nine, that is, they
         s = '0'+s;               ///are separate discrete numbers having nine digits each.
     }
-
     for (int i=0;i<s.size();i+=9){
         int v = 0;
         for (int j=i;j<i+9;j++)
@@ -38,9 +37,33 @@ BigInt BigInteger(string s) {
     return ans;
 }
 
+
+#define base (int)1e9
+BigInt operator + (BigInt a, BigInt b) {
+    Set(a);
+    Set(b);
+    BigInt ans;
+    int carry = 0;
+    for(int i=0;i<max(a.size(), b.size());i++){
+        if (i < a.size())
+            carry += a[i];
+        if (i < b.size())
+            carry += b[i];
+        ans.push_back(carry%base);
+        carry=carry/base;
+    }
+    if (carry)
+        ans.push_back(carry);
+    Set(ans);
+    return ans;
+}
+
 int main(){
-    string a="111112222233333444445555566666777778888899999";
-    BigInt b=BigInteger(a);
-    Print(b);
+    string a,b;
+    cin>>a>>b;
+    BigInt p=BigInteger(a);
+    BigInt q=BigInteger(b);
+
+    Print(p+q);
 }
 
