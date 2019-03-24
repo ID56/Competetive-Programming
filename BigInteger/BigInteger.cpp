@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 
 using namespace std;
-
+/**can add and multiply positive big integers**/
 typedef vector<int> BigInt;
 typedef long long ll;
 
